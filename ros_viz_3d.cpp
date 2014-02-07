@@ -1,0 +1,99 @@
+#include "ros_viz_3d.h"
+#include <ros/package.h>
+
+ros_viz_3d::ros_viz_3d()
+{
+	std::string path_to_package = ros::package::getPath("ros_viz_3d");
+	std::string path_to_agent_files = path_to_package; path_to_agent_files.append("/files/ta_log_AGENTE");
+	std::string path_to_task_files = path_to_package; path_to_task_files.append("/files/ta_log_T");
+    
+        agent_base_string=path_to_agent_files;
+	task_base_string=path_to_task_files;
+	
+	unsigned int i=1;
+	
+	std::string file_name=agent_base_string;
+	std::stringstream iter;
+	iter.str("");
+	iter << i;
+	file_name.append(iter.str());
+	file_name.append(".txt");
+	
+	std::cout<<"AGENTS:"<<std::endl;
+
+	file.open(file_name.c_str());
+	while(file.is_open())
+	{
+	      std::string topic_name="/marker_";
+	      std::string temp="AGENTE";
+	      iter.str("");
+	      iter << i;
+	      temp.append(iter.str());
+	      topic_name.append(temp);
+
+	      agents_pubs[temp] = node.advertise<visualization_msgs::Marker>(topic_name, 0, this);
+	      agents_files[temp] = file_name;
+	      
+	      std::cout<<" - "<<topic_name<<std::endl;
+	      std::cout<<" - "<<file_name<<std::endl;
+	      
+	      file.close();
+	      
+	      i++;
+	      file_name=agent_base_string;
+	      iter.str("");
+	      iter << i;
+	      file_name.append(iter.str());
+	      file_name.append(".txt");
+	      file.open(file_name.c_str());
+	}
+	
+	i=1;
+	
+	file_name=task_base_string;
+	iter.str("");
+	iter << i;
+	file_name.append(iter.str());
+	file_name.append(".txt");
+	
+	std::cout<<"TASKS:"<<std::endl;
+	
+	file.open(file_name.c_str());
+	while(file.is_open())
+	{
+	      std::string topic_name="/marker_";
+	      std::string temp="T";
+	      iter.str("");
+	      iter << i;
+	      temp.append(iter.str());
+	      topic_name.append(temp);
+
+	      tasks_pubs[temp] = node.advertise<visualization_msgs::Marker>(topic_name, 0, this);
+	      tasks_files[temp] = file_name;
+	      
+	      std::cout<<" - "<<topic_name<<std::endl;
+	      std::cout<<" - "<<file_name<<std::endl;
+	      
+	      file.close();
+	      
+	      i++;
+	      file_name=task_base_string;
+	      iter.str("");
+	      iter << i;
+	      file_name.append(iter.str());
+	      file_name.append(".txt");
+	      file.open(file_name.c_str());
+	}
+}
+
+void ros_viz_3d::read()
+{
+      
+}
+
+
+ros_viz_3d::~ros_viz_3d()
+{
+
+}
+
