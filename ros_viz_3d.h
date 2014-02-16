@@ -7,6 +7,9 @@
 #include <sstream>
 #include <QString>
 #include "visualization_msgs/Marker.h"
+#include "tf/transform_datatypes.h"
+#include <tf/tf.h>
+#include <tf/transform_listener.h>
 
 class ros_viz_3d
 {
@@ -23,6 +26,9 @@ private:
 	
 	std::map<std::string,std::string> agents_files;
 	std::map<std::string,std::string> tasks_files;
+	
+	std::map<std::string,std::vector<visualization_msgs::Marker>> agents_marker;
+	std::map<std::string,std::vector<visualization_msgs::Marker>> tasks_marker;
 
 	std::string agent_base_string;
 	std::string task_base_string;

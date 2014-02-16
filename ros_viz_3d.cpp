@@ -37,6 +37,43 @@ ros_viz_3d::ros_viz_3d()
 	      std::cout<<" - "<<topic_name<<std::endl;
 	      std::cout<<" - "<<file_name<<std::endl;
 	      
+	      std::cout<<" --- creating markers"<<std::endl;
+	      
+	      std::string line;
+	      while(getline(file,line))
+	      {
+		      visualization_msgs::Marker marker;
+    
+		      marker.header.frame_id = "/base_link";
+		      //marker.type=visualization_msgs::Marker::MESH_RESOURCE;
+		      //marker.mesh_resource = "package://pilot_interface/src/main_interface/objects/valve/vrc_valve/meshes/vrc_valve.dae";
+		      marker.type=visualization_msgs::Marker::SPHERE;
+		      marker.scale.x = 1;
+		      marker.scale.y = 1;
+		      marker.scale.z = 1;
+		      marker.color.r = 1;
+		      marker.color.g = 0;
+		      marker.color.b = 0;
+		      marker.color.a = 1;
+		      marker.pose.position.z=0;	
+		
+		      double y;
+		      tf::Quaternion q;
+		      std::stringstream   linestream(line);
+		      std::string         data;
+
+		      std::getline(linestream, data, ' ');
+		      linestream >> marker.pose.position.x >>  marker.pose.position.y >> y;
+		      
+		      q.setRPY(0,0,y);
+		      marker.pose.orientation.w=q.getW();
+		      marker.pose.orientation.x=q.getX();
+		      marker.pose.orientation.y=q.getY();
+		      marker.pose.orientation.z=q.getZ();
+		      
+		      agents_marker[topic_name].push_back(marker);
+	      }
+	      
 	      file.close();
 	      
 	      i++;
@@ -74,6 +111,45 @@ ros_viz_3d::ros_viz_3d()
 	      std::cout<<" - "<<topic_name<<std::endl;
 	      std::cout<<" - "<<file_name<<std::endl;
 	      
+	      
+	      std::cout<<" --- creating markers"<<std::endl;
+	      
+	      std::string line;
+	      while(getline(file,line))
+	      {
+		      visualization_msgs::Marker marker;
+    
+		      marker.header.frame_id = "/base_link";
+		      //marker.type=visualization_msgs::Marker::MESH_RESOURCE;
+		      //marker.mesh_resource = "package://pilot_interface/src/main_interface/objects/valve/vrc_valve/meshes/vrc_valve.dae";
+		      marker.type=visualization_msgs::Marker::SPHERE;
+		      marker.scale.x = 1;
+		      marker.scale.y = 1;
+		      marker.scale.z = 1;
+		      marker.color.r = 1;
+		      marker.color.g = 0;
+		      marker.color.b = 0;
+		      marker.color.a = 1;
+		      marker.pose.position.z=0;	
+		
+		      double y;
+		      tf::Quaternion q;
+		      std::stringstream   linestream(line);
+		      std::string         data;
+
+		      std::getline(linestream, data, ' ');
+		      linestream >> marker.pose.position.x >>  marker.pose.position.y >> y;
+		      
+		      q.setRPY(0,0,y);
+		      marker.pose.orientation.w=q.getW();
+		      marker.pose.orientation.x=q.getX();
+		      marker.pose.orientation.y=q.getY();
+		      marker.pose.orientation.z=q.getZ();
+		      
+		      tasks_marker[topic_name].push_back(marker);
+	      }
+	      
+	      
 	      file.close();
 	      
 	      i++;
@@ -88,7 +164,9 @@ ros_viz_3d::ros_viz_3d()
 
 void ros_viz_3d::read()
 {
-      
+	std::cout<<std::endl<<"Publishing Markers"<<std::endl;
+	
+	
 }
 
 
