@@ -31,8 +31,9 @@ ros_viz_3d::ros_viz_3d()
 	      temp.append(iter.str());
 	      topic_name.append(temp);
 
-	      agents_pubs[temp] = node.advertise<visualization_msgs::Marker>(topic_name, 0, this);
+	      agents_pubs[topic_name] = node.advertise<visualization_msgs::Marker>(topic_name, 0, this);
 	      agents_files[temp] = file_name;
+	      agents.push_back(topic_name);
 	      
 	      std::cout<<" - "<<topic_name<<std::endl;
 	      std::cout<<" - "<<file_name<<std::endl;
@@ -105,8 +106,9 @@ ros_viz_3d::ros_viz_3d()
 	      temp.append(iter.str());
 	      topic_name.append(temp);
 
-	      tasks_pubs[temp] = node.advertise<visualization_msgs::Marker>(topic_name, 0, this);
+	      tasks_pubs[topic_name] = node.advertise<visualization_msgs::Marker>(topic_name, 0, this);
 	      tasks_files[temp] = file_name;
+	      tasks.push_back(topic_name);
 	      
 	      std::cout<<" - "<<topic_name<<std::endl;
 	      std::cout<<" - "<<file_name<<std::endl;
@@ -122,7 +124,7 @@ ros_viz_3d::ros_viz_3d()
 		      marker.header.frame_id = "/base_link";
 		      //marker.type=visualization_msgs::Marker::MESH_RESOURCE;
 		      //marker.mesh_resource = "package://pilot_interface/src/main_interface/objects/valve/vrc_valve/meshes/vrc_valve.dae";
-		      marker.type=visualization_msgs::Marker::SPHERE;
+		      marker.type=visualization_msgs::Marker::CUBE;
 		      marker.scale.x = 1;
 		      marker.scale.y = 1;
 		      marker.scale.z = 1;
@@ -166,6 +168,27 @@ void ros_viz_3d::read()
 {
 	std::cout<<std::endl<<"Publishing Markers"<<std::endl;
 	
+	unsigned int i,j,k,g;
+	
+	j=0;g=0;
+
+	while(j<agents_marker.at(agents.at(0)).size() && g<tasks_marker.at(tasks.at(0)).size())
+	{
+
+	        for(i=0;i<agents.size();i++)
+		{
+			 agents_pubs.at(agents.at(i)).publish(agents_marker.at(agents.at(i)).at(j));
+		}
+
+		for(k=0;k<tasks.size();k++)
+		{
+		         tasks_pubs.at(tasks.at(k)).publish(tasks_marker.at(tasks.at(k)).at(g));
+		}
+
+		j++;g++;
+	}
+	
+	std::cout<<std::endl<<"Markers Finished"<<std::endl;
 	
 }
 

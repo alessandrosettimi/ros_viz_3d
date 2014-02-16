@@ -21,6 +21,8 @@ public:
 private:
 	ros::NodeHandle node;
 	
+	std::vector<std::string> agents, tasks;
+	
 	std::map<std::string,ros::Publisher> agents_pubs;
 	std::map<std::string,ros::Publisher> tasks_pubs;
 	
