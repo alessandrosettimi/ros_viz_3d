@@ -32,6 +32,8 @@ private:
 	
 	std::map<std::string,std::vector<visualization_msgs::Marker>> agents_marker;
 	std::map<std::string,std::vector<visualization_msgs::Marker>> tasks_marker;
+	
+	std::map<std::string,visualization_msgs::Marker> agents_home;
 		
 	std::vector<visualization_msgs::MarkerArray> marker_array;
 	ros::Publisher pub;

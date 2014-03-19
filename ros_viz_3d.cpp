@@ -1,6 +1,11 @@
 #include "ros_viz_3d.h"
 #include <ros/package.h>
 
+double distance(double a_x,double a_y,double b_x,double b_y)
+{
+       return sqrt((a_x-b_x)*(a_x-b_x)+(a_y-b_y)*(a_y-b_y));
+}
+
 ros_viz_3d::ros_viz_3d()
 {
 	pub = node.advertise<visualization_msgs::MarkerArray>("/TA_markers", 0, this);
@@ -24,10 +29,13 @@ ros_viz_3d::ros_viz_3d()
 	std::cout<<"AGENTS:"<<std::endl;
 
 	int ma_id=0;
+	bool init;
 	
 	file.open(file_name.c_str());
 	while(file.is_open())
 	{
+	      init=false;
+	      
 	      std::string topic_name="/marker_";
 	      std::string temp="AGENTE";
 	      iter.str("");
@@ -51,8 +59,8 @@ ros_viz_3d::ros_viz_3d()
     
 		      marker.header.frame_id = "/base_link";
 		      marker.type=visualization_msgs::Marker::MESH_RESOURCE;
-		      marker.mesh_resource = "package://ros_viz_3d/forklift/Forklift.dae";
-		      //marker.mesh_resource = "package://ros_viz_3d/R2D2/R2D2.dae";
+		      if (topic_name=="/marker_AGENTE2") marker.mesh_resource = "package://ros_viz_3d/Repair_Kit/Repair_Kit.dae"; // R2D2/R2D2.dae
+	              else marker.mesh_resource = "package://ros_viz_3d/forklift/Forklift.dae";
 		      marker.mesh_use_embedded_materials=true;
 		      //marker.type=visualization_msgs::Marker::SPHERE;
 		      marker.scale.x = 0.1;
@@ -69,8 +77,8 @@ ros_viz_3d::ros_viz_3d()
 		      std::getline(linestream, data, ' ');
 		      linestream >> marker.pose.position.x >>  marker.pose.position.y >> y >> charge;
 		      		      
-		      //q.setRPY(M_PI/2,0,y+M_PI/2); //R2D2
-		      q.setRPY(0,0,y+M_PI/2); //FORKLIFT
+		      if (topic_name=="/marker_AGENTE2") q.setRPY(0,0,y+M_PI/2); //R2D2
+		      else q.setRPY(0,0,y+M_PI/2); //FORKLIFT
 		      marker.pose.orientation.w=q.getW();
 		      marker.pose.orientation.x=q.getX();
 		      marker.pose.orientation.y=q.getY();
@@ -79,6 +87,37 @@ ros_viz_3d::ros_viz_3d()
 		      marker.lifetime=ros::Duration(1);
 		      
 		      agents_marker[topic_name].push_back(marker);
+		      
+		      if(!init)
+		      {
+			      visualization_msgs::Marker home_marker;
+			      
+			      home_marker.header.frame_id = "/base_link";
+			      home_marker.type=visualization_msgs::Marker::CYLINDER;
+			      home_marker.scale.x = 1;
+			      home_marker.scale.y = 1;
+			      home_marker.scale.z = 0.01;
+			      home_marker.pose.position.x=marker.pose.position.x;
+			      home_marker.pose.position.y=marker.pose.position.y;
+			      home_marker.pose.position.z=marker.pose.position.z;
+			
+			      q.setRPY(0,0,0);
+			      home_marker.pose.orientation.w=q.getW();
+			      home_marker.pose.orientation.x=q.getX();
+			      home_marker.pose.orientation.y=q.getY();
+			      home_marker.pose.orientation.z=q.getZ();
+			      
+			      home_marker.color.r = 0.662745; 
+			      home_marker.color.g = 0.662745;
+			      home_marker.color.b = 0.662745;
+			      home_marker.color.a=1;
+			      
+			      home_marker.lifetime=ros::Duration(1);
+			      			      
+			      agents_home[topic_name]=home_marker;
+			      
+			      init=true;
+		      }
 	      }
 	      
 	      file.close();
@@ -105,6 +144,7 @@ ros_viz_3d::ros_viz_3d()
 	ma_id=2;
 	long int sim_index;
 	int color_switch=0;
+	bool active;
 	
 	file.open(file_name.c_str());
 	while(file.is_open())
@@ -127,15 +167,19 @@ ros_viz_3d::ros_viz_3d()
 	      
 	      
 	      std::cout<<" --- creating markers"<<std::endl;
+	      
+	      
+	      active=true;
 	      	      
 	      std::string line;
 	      while(getline(file,line))
 	      {
+
 		      visualization_msgs::Marker marker;
     
 		      marker.header.frame_id = "/base_link";
 
-		      marker.pose.position.z=0;	
+		      marker.pose.position.z=0;
 		
 		      double execution_time,period,deadline,time;
 		      std::string id,owner;
@@ -156,77 +200,98 @@ ros_viz_3d::ros_viz_3d()
 		      
 		      marker.lifetime=ros::Duration(1);
 		      
-		      if(type==1 || type==2)
+		      if(active)
 		      {
-			    marker.type=visualization_msgs::Marker::MESH_RESOURCE;
-			    marker.mesh_resource = "package://ros_viz_3d/oildrum/oildrum.dae";
-			    //marker.mesh_use_embedded_materials=true;
-			    //marker.type=visualization_msgs::Marker::CUBE;
-			    
-			    marker.scale.x = 0.25;
-			    marker.scale.y = 0.25;
-			    marker.scale.z = 0.25;
-			    
-			    marker.color.r = 0.5;
-			    marker.color.g = 0.5;
-			    marker.color.b = 0;
-			    marker.color.a=1;
-			    
-			    if(owner!="0")
-			    {
-				  std::string temp_str="/marker_";
-				  temp_str.append(owner);
+			      if(type==1 || type==2)
+			      {
+				    marker.type=visualization_msgs::Marker::MESH_RESOURCE;
+				    marker.mesh_resource = "package://ros_viz_3d/oildrum/oildrum.dae";
+				    //marker.mesh_use_embedded_materials=true;
+				    //marker.type=visualization_msgs::Marker::CUBE;
+				    
+				    marker.scale.x = 0.25;
+				    marker.scale.y = 0.25;
+				    marker.scale.z = 0.25;
+				    
+				    marker.color.r = 0.5;
+				    marker.color.g = 0.5;
+				    marker.color.b = 0;
+				    marker.color.a=1;
+				    
+				    if(owner!="0")// && owner!="AGENTE2")
+				    {
+					  std::string temp_str="/marker_";
+					  temp_str.append(owner);
 
-				  tf::Quaternion q2;
-				  q2.setX(agents_marker.at(temp_str).at(sim_index).pose.orientation.x);
-				  q2.setY(agents_marker.at(temp_str).at(sim_index).pose.orientation.y);
-				  q2.setZ(agents_marker.at(temp_str).at(sim_index).pose.orientation.z);
-				  q2.setW(agents_marker.at(temp_str).at(sim_index).pose.orientation.w);
-				  double roll_,pitch_,yaw_;
-				  tf::Matrix3x3(q2).getRPY(roll_,pitch_,yaw_);
-				  
-				  marker.pose.position.x = agents_marker.at(temp_str).at(sim_index).pose.position.x + 0.4*cos(yaw_-M_PI/2);
-				  marker.pose.position.y = agents_marker.at(temp_str).at(sim_index).pose.position.y + 0.4*sin(yaw_-M_PI/2);
-				  marker.pose.position.z = 0.1;
-			    }
+					  tf::Quaternion q2;
+					  q2.setX(agents_marker.at(temp_str).at(sim_index).pose.orientation.x);
+					  q2.setY(agents_marker.at(temp_str).at(sim_index).pose.orientation.y);
+					  q2.setZ(agents_marker.at(temp_str).at(sim_index).pose.orientation.z);
+					  q2.setW(agents_marker.at(temp_str).at(sim_index).pose.orientation.w);
+					  double roll_,pitch_,yaw_;
+					  tf::Matrix3x3(q2).getRPY(roll_,pitch_,yaw_);
+					  
+					  if (owner!="AGENTE2")
+					  {
+						  marker.pose.position.x = agents_marker.at(temp_str).at(sim_index).pose.position.x + 0.4*cos(yaw_-M_PI/2);
+						  marker.pose.position.y = agents_marker.at(temp_str).at(sim_index).pose.position.y + 0.4*sin(yaw_-M_PI/2);
+					  }
+					  else 
+					  {
+						  marker.pose.position.x = agents_marker.at(temp_str).at(sim_index).pose.position.x;
+					          marker.pose.position.y = agents_marker.at(temp_str).at(sim_index).pose.position.y;
+					  }
+					  marker.pose.position.z = 0.1;
+					  
+					  if(distance(marker.pose.position.x,marker.pose.position.y,agents_home.at(temp_str).pose.position.x,agents_home.at(temp_str).pose.position.y) < 0.5) active=false;
+				    }
+			      }
+		      
+
+			      if(type==0)
+			      {
+				    marker.type=visualization_msgs::Marker::CUBE;
+				    
+				    marker.scale.x = 1;
+				    marker.scale.y = 1;
+				    marker.scale.z = 0.01;
+				    
+				    marker.color.r = 0;
+				    marker.color.g = 0.2;
+				    marker.color.b = 0;
+				    marker.color.a=1;
+				    
+				    if(owner!="0" && !available)
+				    {
+					  if(color_switch<30)
+					  {
+					      marker.color.r = 0;
+					      marker.color.g = 0.2;
+					      marker.color.b = 0;
+					      marker.color.a=1;
+					      color_switch++;
+					  }
+					  else
+					  {
+					      marker.color.r = 0;
+					      marker.color.g = 0.4;
+					      marker.color.b = 0;
+					      marker.color.a=1;
+					      color_switch++;
+					      if(color_switch==60) color_switch=0;
+					  }
+				    }
+			      }
+		      }
+		      else
+		      {
+			      marker.color.a=0;
+			      if(available)
+			      {
+				      active=true;
+			      }
 		      }
 		      
-		      if(type==0)
-		      {
-			    marker.type=visualization_msgs::Marker::MESH_RESOURCE;
-			    marker.type=visualization_msgs::Marker::CUBE;
-			    
-			    marker.scale.x = 1;
-			    marker.scale.y = 1;
-			    marker.scale.z = 0.01;
-			    
-			    marker.color.r = 0;
-			    marker.color.g = 0.2;
-			    marker.color.b = 0;
-			    marker.color.a=1;
-			    
-			    if(owner!="0" && !done)
-			    {
-				  if(color_switch<30)
-				  {
-				      marker.color.r = 0;
-				      marker.color.g = 0.2;
-				      marker.color.b = 0;
-				      marker.color.a=1;
-				      color_switch++;
-				  }
-				  else
-				  {
-				      marker.color.r = 0;
-				      marker.color.g = 0.4;
-				      marker.color.b = 0;
-				      marker.color.a=1;
-				      color_switch++;
-				      if(color_switch==60) color_switch=0;
-				  }
-			    }
-		      }
-		     
 		      tasks_marker[topic_name].push_back(marker);
 		      
 		      sim_index++;
@@ -249,7 +314,7 @@ void ros_viz_3d::read()
 {
 	std::cout<<std::endl<<"Publishing Markers"<<std::endl;
 	
-	unsigned int i,j,k,g;
+	unsigned int i,j,k,l,g;
 	
 	j=0;g=0;
 
@@ -261,11 +326,18 @@ void ros_viz_3d::read()
 		{
 		         agents_marker.at(agents.at(i)).at(j).id=i;
 			 ma.markers.push_back(agents_marker.at(agents.at(i)).at(j));
+
+		}
+		
+		for(l=0;l<agents.size();l++)
+		{
+		         agents_home.at(agents.at(l)).id=i+l;
+			 ma.markers.push_back(agents_home.at(agents.at(l)));
 		}
 
 		for(k=0;k<tasks.size();k++)
 		{
-			 tasks_marker.at(tasks.at(k)).at(g).id=i+k;
+			 tasks_marker.at(tasks.at(k)).at(g).id=i+l+k;
 			 ma.markers.push_back(tasks_marker.at(tasks.at(k)).at(g));	
 		}
 
