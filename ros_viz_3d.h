@@ -7,6 +7,7 @@
 #include <sstream>
 #include <QString>
 #include "visualization_msgs/Marker.h"
+#include "visualization_msgs/MarkerArray.h"
 #include "tf/transform_datatypes.h"
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
@@ -31,6 +32,9 @@ private:
 	
 	std::map<std::string,std::vector<visualization_msgs::Marker>> agents_marker;
 	std::map<std::string,std::vector<visualization_msgs::Marker>> tasks_marker;
+		
+	std::vector<visualization_msgs::MarkerArray> marker_array;
+	ros::Publisher pub;
 
 	std::string agent_base_string;
 	std::string task_base_string;
