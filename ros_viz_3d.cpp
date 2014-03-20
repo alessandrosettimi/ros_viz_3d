@@ -202,6 +202,8 @@ ros_viz_3d::ros_viz_3d()
 		      
 		      if(active)
 		      {
+			      marker.color.a=1;
+			      
 			      if(type==1 || type==2)
 			      {
 				    marker.type=visualization_msgs::Marker::MESH_RESOURCE;
@@ -213,12 +215,21 @@ ros_viz_3d::ros_viz_3d()
 				    marker.scale.y = 0.25;
 				    marker.scale.z = 0.25;
 				    
-				    marker.color.r = 0.5;
-				    marker.color.g = 0.5;
-				    marker.color.b = 0;
+				    if(type==1)
+				    {
+					  marker.color.r = 0.5;
+					  marker.color.g = 0.5;
+					  marker.color.b = 0;
+				    }
+				    else
+				    {
+					  marker.color.r = 0.5;
+					  marker.color.g = 0;
+					  marker.color.b = 0.5;
+				    }
 				    marker.color.a=1;
 				    
-				    if(owner!="0")// && owner!="AGENTE2")
+				    if(!available && owner!="0")
 				    {
 					  std::string temp_str="/marker_";
 					  temp_str.append(owner);
