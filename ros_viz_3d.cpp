@@ -59,8 +59,23 @@ ros_viz_3d::ros_viz_3d()
     
 		      marker.header.frame_id = "/base_link";
 		      marker.type=visualization_msgs::Marker::MESH_RESOURCE;
-		      if (topic_name=="/marker_AGENTE2") marker.mesh_resource = "package://ros_viz_3d/Repair_Kit/Repair_Kit.dae"; // R2D2/R2D2.dae
-	              else marker.mesh_resource = "package://ros_viz_3d/forklift/Forklift.dae";
+		      if (topic_name=="/marker_AGENTE2")
+		      {
+			  marker.mesh_resource = "package://ros_viz_3d/Repair_Kit/Repair_Kit.dae"; // R2D2/R2D2.dae
+			  marker.scale.x = 0.3;
+			  marker.scale.y = 0.3;
+			  marker.scale.z = 0.3;
+		      }
+	              else
+		      { 
+			  marker.mesh_resource = "package://ros_viz_3d/forklift/Forklift.dae";
+			  marker.scale.x = 0.1;
+			  marker.scale.y = 0.1;
+			  marker.scale.z = 0.1;
+		      }
+		      
+		      marker.mesh_resource = "package://ros_viz_3d/glider/glider.dae"; //HACK	
+			
 		      marker.mesh_use_embedded_materials=true;
 		      //marker.type=visualization_msgs::Marker::SPHERE;
 		      marker.scale.x = 0.1;
@@ -79,6 +94,9 @@ ros_viz_3d::ros_viz_3d()
 		      		      
 		      if (topic_name=="/marker_AGENTE2") q.setRPY(0,0,y+M_PI/2); //R2D2
 		      else q.setRPY(0,0,y+M_PI/2); //FORKLIFT
+		      
+		      q.setRPY(0,0,y+M_PI/2); //FORKLIFT HACK
+		      
 		      marker.pose.orientation.w=q.getW();
 		      marker.pose.orientation.x=q.getX();
 		      marker.pose.orientation.y=q.getY();
@@ -87,6 +105,56 @@ ros_viz_3d::ros_viz_3d()
 		      marker.lifetime=ros::Duration(1);
 		      
 		      agents_marker[topic_name].push_back(marker);
+		      
+		      //CHARGE
+		      
+		      visualization_msgs::Marker charge_marker;
+    
+		      charge_marker.header.frame_id = "/base_link";
+		      charge_marker.type=visualization_msgs::Marker::TEXT_VIEW_FACING;
+		      std::ostringstream charge_strs;
+		      charge_strs<< (int)charge;
+		      std::string temp_ch = charge_strs.str();
+		      temp_ch.append(" %");
+		      charge_marker.text=temp_ch;
+		      charge_marker.color.a=1;
+		      
+		      charge_marker.color.r=0;
+		      charge_marker.color.g=1;
+		      charge_marker.color.b=0;
+		      
+		      if(charge < 50)
+		      {
+			    charge_marker.color.r=0.7;
+			    charge_marker.color.g=0.7;
+			    charge_marker.color.b=0;
+		      }
+		      
+		      if(charge < 30)
+		      {
+			    charge_marker.color.r=1;
+			    charge_marker.color.g=0;
+			    charge_marker.color.b=0;
+		      }
+		      
+		      charge_marker.scale.x = 1;
+		      charge_marker.scale.y = 1;
+		      charge_marker.scale.z = 0.1;
+		      charge_marker.pose.position.x=marker.pose.position.x;
+		      charge_marker.pose.position.y=marker.pose.position.y;
+		      charge_marker.pose.position.z=marker.pose.position.z+0.6;	
+		
+		      q.setRPY(0,0,0);
+		      charge_marker.pose.orientation.w=q.getW();
+		      charge_marker.pose.orientation.x=q.getX();
+		      charge_marker.pose.orientation.y=q.getY();
+		      charge_marker.pose.orientation.z=q.getZ();
+		      
+		      charge_marker.lifetime=ros::Duration(1);
+		      
+		      agents_charge[topic_name].push_back(charge_marker);
+		      
+		      //HOME
 		      
 		      if(!init)
 		      {
@@ -193,6 +261,7 @@ ros_viz_3d::ros_viz_3d()
 		      linestream >> id >> marker.pose.position.x >>  marker.pose.position.y >> marker.pose.position.z >> type >> execution_time >> period >> deadline >> executing >> time >> owner >> available >> done;
 
 		      q.setRPY(0,0,0);
+		      q.setRPY(0,0,M_PI/2); //HACK
 		      marker.pose.orientation.w=q.getW();
 		      marker.pose.orientation.x=q.getX();
 		      marker.pose.orientation.y=q.getY();
@@ -207,27 +276,32 @@ ros_viz_3d::ros_viz_3d()
 			      if(type==1 || type==2)
 			      {
 				    marker.type=visualization_msgs::Marker::MESH_RESOURCE;
-				    marker.mesh_resource = "package://ros_viz_3d/oildrum/oildrum.dae";
+// 				    marker.mesh_resource = "package://ros_viz_3d/oildrum/oildrum.dae";
+				     marker.mesh_resource = "package://ros_viz_3d/glider/glider.dae"; //HACK
 				    //marker.mesh_use_embedded_materials=true;
 				    //marker.type=visualization_msgs::Marker::CUBE;
 				    
-				    marker.scale.x = 0.25;
-				    marker.scale.y = 0.25;
-				    marker.scale.z = 0.25;
+				    marker.scale.x = 0.1; //0.25
+				    marker.scale.y = 0.1; //0.25
+				    marker.scale.z = 0.1; //0.25
 				    
-				    if(type==1)
-				    {
-					  marker.color.r = 0.5;
-					  marker.color.g = 0.5;
-					  marker.color.b = 0;
-				    }
-				    else
-				    {
-					  marker.color.r = 0.5;
-					  marker.color.g = 0;
-					  marker.color.b = 0.5;
-				    }
-				    marker.color.a=1;
+// 				    if(type==1)
+// 				    {
+// 					  marker.color.r = 0.5;
+// 					  marker.color.g = 0.5;
+// 					  marker.color.b = 0;
+// 				    }
+// 				    else
+// 				    {
+// 					  marker.color.r = 0.5;
+// 					  marker.color.g = 0;
+// 					  marker.color.b = 0.5;
+// 				    }
+
+				    marker.color.r = 1;
+				    marker.color.g = 0.7;
+				    marker.color.b = 0.4;
+				    marker.color.a=0.5; //1
 				    
 				    if(!available && owner!="0")
 				    {
@@ -242,19 +316,29 @@ ros_viz_3d::ros_viz_3d()
 					  double roll_,pitch_,yaw_;
 					  tf::Matrix3x3(q2).getRPY(roll_,pitch_,yaw_);
 					  
-					  if (owner!="AGENTE2")
-					  {
-						  marker.pose.position.x = agents_marker.at(temp_str).at(sim_index).pose.position.x + 0.4*cos(yaw_-M_PI/2);
-						  marker.pose.position.y = agents_marker.at(temp_str).at(sim_index).pose.position.y + 0.4*sin(yaw_-M_PI/2);
-					  }
-					  else 
-					  {
-						  marker.pose.position.x = agents_marker.at(temp_str).at(sim_index).pose.position.x;
-					          marker.pose.position.y = agents_marker.at(temp_str).at(sim_index).pose.position.y;
-					  }
+					  //if (owner!="AGENTE2")
+					  //{
+						  if(type==1)
+						  {
+							marker.pose.position.x = agents_marker.at(temp_str).at(sim_index).pose.position.x + 0.4*cos(yaw_-M_PI/2);
+							marker.pose.position.y = agents_marker.at(temp_str).at(sim_index).pose.position.y + 0.4*sin(yaw_-M_PI/2);
+						  }
+						  else
+						  {
+						        marker.pose.position.x = agents_marker.at(temp_str).at(sim_index).pose.position.x + 0.6*cos(yaw_-M_PI/2);
+							marker.pose.position.y = agents_marker.at(temp_str).at(sim_index).pose.position.y + 0.6*sin(yaw_-M_PI/2);
+						  }  
+						    
+					  //}
+					  //else 
+					  //{
+					//	  marker.pose.position.x = agents_marker.at(temp_str).at(sim_index).pose.position.x;
+					//          marker.pose.position.y = agents_marker.at(temp_str).at(sim_index).pose.position.y;
+					 // }
+					  
 					  marker.pose.position.z = 0.1;
 					  
-					  if(distance(marker.pose.position.x,marker.pose.position.y,agents_home.at(temp_str).pose.position.x,agents_home.at(temp_str).pose.position.y) < 0.5) active=false;
+					  if(distance(marker.pose.position.x,marker.pose.position.y,agents_home.at(temp_str).pose.position.x,agents_home.at(temp_str).pose.position.y) < 0.2) active=false;
 				    }
 			      }
 		      
@@ -325,7 +409,7 @@ void ros_viz_3d::read()
 {
 	std::cout<<std::endl<<"Publishing Markers"<<std::endl;
 	
-	unsigned int i,j,k,l,g;
+	unsigned int i,j,k,l,m,g;
 	
 	j=0;g=0;
 
@@ -340,15 +424,21 @@ void ros_viz_3d::read()
 
 		}
 		
-		for(l=0;l<agents.size();l++)
+// 		for(l=0;l<agents.size();l++)
+// 		{
+// 		         agents_home.at(agents.at(l)).id=i+l;
+// 			 ma.markers.push_back(agents_home.at(agents.at(l)));
+// 		}
+		
+		for(m=0;m<agents.size();m++)
 		{
-		         agents_home.at(agents.at(l)).id=i+l;
-			 ma.markers.push_back(agents_home.at(agents.at(l)));
+		         agents_charge.at(agents.at(m)).at(j).id=i+m+l;
+			 ma.markers.push_back(agents_charge.at(agents.at(m)).at(j));
 		}
 
 		for(k=0;k<tasks.size();k++)
 		{
-			 tasks_marker.at(tasks.at(k)).at(g).id=i+l+k;
+			 tasks_marker.at(tasks.at(k)).at(g).id=i+m+l+k;
 			 ma.markers.push_back(tasks_marker.at(tasks.at(k)).at(g));	
 		}
 
